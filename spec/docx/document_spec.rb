@@ -90,7 +90,7 @@ describe Docx::Document do
 
     describe '#paragraphs' do
       it 'should not grabs paragraphs in the tables' do
-        expect(@doc.paragraphs.map(&:text)).to_not include("Second table")
+        expect(@doc.paragraphs.map(&:text)).to_not include('Second table')
       end
     end
   end
@@ -350,10 +350,10 @@ describe Docx::Document do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
       @formatted_line = @doc.paragraphs[5]
-      @p_regex = /(^\<p).+((?<=\>)\w+)(\<\/p>$)/
-      @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
-      @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
-      @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
+      @p_regex = %r{(^\<p).+((?<=\>)\w+)(\</p>$)}
+      @span_regex = %r{(\<span).+((?<=\>)\w+)(</span>)}
+      @em_regex = %r{(\<em).+((?<=\>)\w+)(\</em\>)}
+      @strong_regex = %r{(\<strong).+((?<=\>)\w+)(\</strong\>)}
     end
 
     it 'should wrap pragraphs in a p tag' do
@@ -390,7 +390,7 @@ describe Docx::Document do
     end
 
     it 'should set font size on styled paragraphs' do
-      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/
+      regex = %r{(\<p{1})[^\>]+style\=\"([^\"]+).+(</p>)}
       scan = @doc.paragraphs[9].to_html.scan(regex).flatten
       expect(scan.first).to eq '<p'
       expect(scan.last).to eq '</p>'
@@ -398,7 +398,7 @@ describe Docx::Document do
     end
 
     it 'should set font size on styled text runs' do
-      regex = /(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(<\/span>)/
+      regex = %r{(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(</span>)}
       scan = @doc.paragraphs[10].to_html.scan(regex).flatten
       expect(scan.first).to eq '<span'
       expect(scan.last).to eq '</span>'
@@ -428,11 +428,13 @@ describe Docx::Document do
     end
 
     it 'should output styled html' do
-      expect(@formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size).to eq 1
+      span_text = '<span style="text-decoration:underline;"><strong><em>all</em></strong></span>'
+      expect(@formatted_line.to_html.scan(span_text).size).to eq 1
     end
 
     it 'should join paragraphs with newlines' do
-      expect(@doc.to_html.scan(%(<p style="font-size:11pt;">Normal</p>\n<p style="font-size:11pt;"><em>Italic</em></p>\n<p style="font-size:11pt;"><strong>Bold</strong></p>)).size).to eq 1
+      p_text = %(<p style="font-size:11pt;">Normal</p>\n<p style="font-size:11pt;"><em>Italic</em></p>\n<p style="font-size:11pt;"><strong>Bold</strong></p>)
+      expect(@doc.to_html.scan(p_text).size).to eq 1
     end
   end
 

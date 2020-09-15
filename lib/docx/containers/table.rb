@@ -20,7 +20,7 @@ module Docx
 
         # Array of row
         def rows
-          @node.xpath('w:tr').map {|r_node| Containers::TableRow.new(r_node) }
+          @node.xpath('w:tr').map { |r_node| Containers::TableRow.new(r_node) }
         end
 
         def row_count
@@ -30,8 +30,8 @@ module Docx
         # Array of column
         def columns
           columns_containers = []
-          (0..(column_count-1)).each do |i|
-            columns_containers[i] = Containers::TableColumn.new @node.xpath("w:tr//w:tc[#{i+1}]")
+          (0..(column_count - 1)).each do |i|
+            columns_containers[i] = Containers::TableColumn.new @node.xpath("w:tr//w:tc[#{i + 1}]")
           end
           columns_containers
         end
@@ -44,7 +44,6 @@ module Docx
         def each_rows
           rows.each { |r| yield(r) }
         end
-        
       end
     end
   end

@@ -20,15 +20,15 @@ module Docx
   class Document
     attr_reader :xml, :doc, :zip, :styles
 
-    def initialize(path_or_io, options = {})
+    def initialize(path_or_io, _options = {})
       @replace = {}
 
       # if path-or_io is string && does not contain a null byte
-      if (path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io))
-        @zip = Zip::File.open(path_or_io)
-      else
-        @zip = Zip::File.open_buffer(path_or_io)
-      end
+      @zip = if path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io)
+               Zip::File.open(path_or_io)
+             else
+               Zip::File.open_buffer(path_or_io)
+             end
 
       document = @zip.find_entry('word/document.xml')
       document ||= @zip.find_entry('word/document2.xml')
@@ -49,7 +49,10 @@ module Docx
       }
     end
 
-    # With no associated block, Docx::Document.open is a synonym for Docx::Document.new. If the optional code block is given, it will be passed the opened +docx+ file as an argument and the Docx::Document oject will automatically be closed when the block terminates. The values of the block will be returned from Docx::Document.open.
+    # With no associated block, Docx::Document.open is a synonym for Docx::Document.new.
+    # If the optional code block is given, it will be passed the opened +docx+ file as an argument
+    # and the Docx::Document oject will automatically be closed when the block terminates.
+    # The values of the block will be returned from Docx::Document.open.
     # call-seq:
     #   open(filepath) => file
     #   open(filepath) {|file| block } => obj
