@@ -12,7 +12,7 @@ module Docx
 
         # Erase text within an element
         def blank!
-          @node.xpath(".//w:t").each {|t| t.content = '' }
+          @node.xpath('.//w:t').each { |t| t.content = '' }
         end
 
         def remove!

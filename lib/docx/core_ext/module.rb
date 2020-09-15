@@ -1,4 +1,4 @@
-unless Object.const_defined?("ActiveSupport")
+unless Object.const_defined?('ActiveSupport')
   class Module
     # Provides a delegate class method to easily expose contained objects' public methods
     # as your own. Pass one or more methods (specified as symbols or strings)
@@ -121,9 +121,7 @@ unless Object.const_defined?("ActiveSupport")
 
       prefix, allow_nil = options.values_at(:prefix, :allow_nil)
 
-      if prefix == true && to =~ /^[^a-z_]/
-        raise ArgumentError, 'Can only automatically set the delegation prefix when delegating to a method.'
-      end
+      raise ArgumentError, 'Can only automatically set the delegation prefix when delegating to a method.' if prefix == true && to =~ /^[^a-z_]/
 
       method_prefix = \
         if prefix
@@ -141,7 +139,7 @@ unless Object.const_defined?("ActiveSupport")
       methods.each do |method|
         # Attribute writer methods only accept one argument. Makes sure []=
         # methods still accept two arguments.
-        definition = (method =~ /[^\]]=$/) ? 'arg' : '*args, &block'
+        definition = method =~ /[^\]]=$/ ? 'arg' : '*args, &block'
 
         if allow_nil
           module_eval(<<-EOS, file, line - 2)

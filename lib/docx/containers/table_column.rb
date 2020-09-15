@@ -19,10 +19,7 @@ module Docx
         end
 
         # Array of cells contained within row
-        def cells
-          @cells
-        end
-        
+        attr_reader :cells
       end
     end
   end
