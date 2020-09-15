@@ -33,7 +33,7 @@ module Docx
       @replace = {}
 
       # if path-or_io is string && does not contain a null byte
-      @zip = if path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io)
+      @zip = if path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io) || path_or_io.instance_of?(Pathname)
                Zip::File.open(path_or_io)
              else
                Zip::File.open_buffer(path_or_io)
