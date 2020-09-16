@@ -46,7 +46,6 @@ module Docx
 
       raise Errno::ENOENT if @doc.nil?
 
-      load_styles
       yield(self) if block_given?
     ensure
       @zip.close
@@ -72,6 +71,10 @@ module Docx
 
     def paragraphs
       @doc.xpath('//w:document//w:body/w:p').map { |p_node| parse_paragraph_from p_node }
+    end
+
+    def headers_paragraphs(header_number = 1)
+      @headers["header#{header_number}"].xpath('//w:hdr/w:p').map { |p_node| parse_paragraph_from p_node }
     end
 
     def bookmarks
@@ -171,14 +174,6 @@ module Docx
     end
 
     private
-
-    def load_styles
-      @styles_xml = @zip.read('word/styles.xml')
-      @styles = Nokogiri::XML(@styles_xml)
-    rescue Errno::ENOENT => e
-      warn e.message
-      nil
-    end
 
     #--
     # TODO: Flesh this out to be compatible with other files

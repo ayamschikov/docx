@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.1
+
+### Enhancements
+
+- Added Pathname support for initialization
+- Added headers functionality
+
 ## v0.5.0
 
 ### Enhancements

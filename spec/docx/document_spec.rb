@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'amazing_print'
 require 'docx'
 require 'tempfile'
 
@@ -462,17 +463,30 @@ describe Docx::Document do
   end
 
   describe 'multiple documents' do
-    before do
-      @doc = Docx::Document.open(@fixtures_path + '/multi_doc.docx')
-    end
+    let(:doc) { Docx::Document.open(@fixtures_path + '/multi_doc.docx') }
 
     it 'should extract all inner documents' do
-      expect(@doc.doc).to_not be_nil
-      expect(@doc.styles).to_not be_nil
-      expect(@doc.headers).to_not be_nil
-      expect(@doc.headers['header1'].text).to eq 'Hello from the header.'
-      expect(@doc.footers).to_not be_nil
-      expect(@doc.footers['footer1'].text).to eq 'Hello from the footer.'
+      expect(doc.doc).to_not be_nil
+      expect(doc.styles).to_not be_nil
+      expect(doc.headers).to_not be_nil
+      expect(doc.headers['header1'].text).to eq 'Hello from the header.'
+      expect(doc.footers).to_not be_nil
+      expect(doc.footers['footer1'].text).to eq 'Hello from the footer.'
+    end
+
+    it 'should change header1' do
+      replacement = 'Hello from a changed header.'
+
+      expect(doc.headers['header1'].text).to eq 'Hello from the header.'
+
+      doc.headers_paragraphs.each do |par|
+        par.each_text_run do |text_run|
+          text_run.substitute('the', 'a')
+          text_run.substitute('header', 'changed header')
+        end
+      end
+
+      expect(doc.headers['header1'].text).to eq replacement
     end
   end
 end

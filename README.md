@@ -130,6 +130,14 @@ doc.paragraphs.each do |p|
   end
 end
 
+# Substitute text in headers
+doc.headers_paragraphs.each do |paragraph|
+  paragraph.each_text_run do |text_run|
+    text_run.substitute('_placeholder_', 'replacement value')
+  end
+end
+
+
 # Save document to specified path
 doc.save('example-edited.docx')
 ```
