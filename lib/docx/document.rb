@@ -1,6 +1,7 @@
 require 'docx/containers'
 require 'docx/elements'
 require 'nokogiri'
+require 'open-uri'
 require 'zip'
 
 module Docx
@@ -24,7 +25,8 @@ module Docx
       doc: 'word/document.xml',
       styles: 'word/styles.xml',
       headers: 'word/header*.xml',
-      footers: 'word/footer*.xml'
+      footers: 'word/footer*.xml',
+      relationships: 'word/_rels/document.xml.rels'
     }.freeze
 
     attr_reader :xml, :doc, :zip, :styles, :headers, :footers
@@ -40,7 +42,7 @@ module Docx
              end
 
       extract_documents
-
+      extract_media
       # Support for file made by Office365
       @doc ||= Nokogiri::XML(@zip.find_entry('word/document2.xml').get_input_stream.read)
 
@@ -75,6 +77,42 @@ module Docx
 
     def headers_paragraphs(header_number = 1)
       @headers["header#{header_number}"].xpath('//w:hdr/w:p').map { |p_node| parse_paragraph_from p_node }
+    end
+
+    def image_relations
+      @relationships.css('Relationship').select { |p_node| p_node['Target'].include?('media') }
+    end
+
+    def replace_image(image, replacement)
+      rel = image_relations.find { |relation| relation['Target'].include?(image) }
+
+      return unless rel.instance_of?(Nokogiri::XML::Element)
+
+      data = begin
+               URI.open(replacement).read.force_encoding('UTF-8')
+             rescue
+               nil
+             end
+
+      return if data.nil? || data.empty?
+
+
+      img_url_no_params = replacement.gsub(/\?.*/, '')
+      extension = File.extname(img_url_no_params).split('.').last
+      image_without_extension = image.split('.').first
+
+      temp_image = Tempfile.new("#{image_without_extension}.#{extension}", encoding: 'utf-8')
+      temp_image.write(data)
+      temp_image.close
+
+      zip.remove("word/media/#{image}")
+      zip.add("word/media/#{image_without_extension}.#{extension}", temp_image)
+
+      rel['Target'] = "media/#{image_without_extension}.#{extension}"
+    end
+
+    def images
+      @media
     end
 
     def bookmarks
@@ -128,7 +166,7 @@ module Docx
     # Save document to provided path
     # call-seq:
     #   save(filepath) => void
-    def save(path)
+    def save_to(path)
       update
       Zip::OutputStream.open(path) do |out|
         zip.each do |entry|
@@ -143,6 +181,10 @@ module Docx
           end
         end
       end
+    end
+
+    def save
+      update
       zip.close
     end
 
@@ -232,6 +274,16 @@ module Docx
       end
       hash = Hash[filename_and_contents_pairs]
       instance_variable_set(:"@#{hash_attr_name}", hash)
+    end
+
+    def extract_media
+      files = @zip.glob('word/media/*.*').map(&:name)
+      filename_and_contents_pairs = files.map do |file|
+        simple_file_name = file.sub(%r{^word/media/}, '')
+        [simple_file_name, @zip.read(file)]
+      end
+      hash = Hash[filename_and_contents_pairs]
+      instance_variable_set(:"@media", hash)
     end
   end
 end

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
 require 'amazing_print'
+require 'spec_helper'
 require 'docx'
+require 'open-uri'
 require 'tempfile'
 
 describe Docx::Document do
@@ -487,6 +488,25 @@ describe Docx::Document do
       end
 
       expect(doc.headers['header1'].text).to eq replacement
+    end
+  end
+
+  describe 'image documents' do
+    let(:doc) { Docx::Document.open(@fixtures_path + '/image1.docx') }
+
+    it 'should extract all inner documents' do
+      expect(doc.images).to_not be_nil
+      expect(doc.image_relations).to_not be_nil
+    end
+
+    # TODO: fix test
+    xit 'should change image1' do
+      replacement = 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'
+      old_image = doc.images['image1.png']
+
+      doc.replace_image('image1.png', replacement)
+
+      expect(doc.images['image1.png']).not_to eq(old_image)
     end
   end
 end
