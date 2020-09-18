@@ -492,7 +492,7 @@ describe Docx::Document do
   end
 
   describe 'image documents' do
-    let(:doc) { Docx::Document.open(@fixtures_path + '/image1.docx') }
+    let(:doc) { Docx::Document.open(@fixtures_path + '/image.docx') }
 
     it 'should extract all inner documents' do
       expect(doc.images).to_not be_nil
@@ -507,6 +507,15 @@ describe Docx::Document do
       doc.replace_image('image1.png', replacement)
 
       expect(doc.images['image1.png']).not_to eq(old_image)
+    end
+
+    xit 'should remove image1' do
+      image = 'image1.png'
+
+      doc.remove_image(image)
+      rel = doc.image_relations.find { |relation| relation['Target'].include?(image) }
+      expect(rel).to be_nil
+      expect(doc.images['image1.png']).to be_nil
     end
   end
 end

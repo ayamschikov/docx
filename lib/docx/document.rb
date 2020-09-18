@@ -49,8 +49,6 @@ module Docx
       raise Errno::ENOENT if @doc.nil?
 
       yield(self) if block_given?
-    ensure
-      @zip.close
     end
 
     # This stores the current global document properties, for now
@@ -81,6 +79,16 @@ module Docx
 
     def image_relations
       @relationships.css('Relationship').select { |p_node| p_node['Target'].include?('media') }
+    end
+
+    def remove_image(image)
+      rel = image_relations.find { |relation| relation['Target'].include?(image) }
+
+      return unless rel.instance_of?(Nokogiri::XML::Element)
+
+      zip.remove("word/media/#{image}")
+
+      rel.remove
     end
 
     def replace_image(image, replacement)
