@@ -323,7 +323,7 @@ describe Docx::Document do
       before { @doc = Docx::Document.open(@fixtures_path + '/saving_wps.docx') }
       it 'should save to a normal file path' do
         @new_doc_path = @fixtures_path + '/new_save.docx'
-        @doc.save(@new_doc_path)
+        @doc.save_to(@new_doc_path)
         @new_doc = Docx::Document.open(@new_doc_path)
         expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
       end
@@ -451,7 +451,7 @@ describe Docx::Document do
         doc.replace_entry entry_path, io.read
       end
 
-      doc.save(temp_file_path)
+      doc.save_to(temp_file_path)
 
       File.open replacement_file_path, 'rb' do |io|
         expect(Zip::File.open(temp_file_path).read(entry_path)).to eq io.read
@@ -495,27 +495,36 @@ describe Docx::Document do
     let(:doc) { Docx::Document.open(@fixtures_path + '/image.docx') }
 
     it 'should extract all inner documents' do
-      expect(doc.images).to_not be_nil
+      expect(doc.media).to_not be_nil
       expect(doc.image_relations).to_not be_nil
     end
 
     # TODO: fix test
     xit 'should change image1' do
       replacement = 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'
-      old_image = doc.images['image1.png']
+      old_image = doc.media['image1.png']
 
       doc.replace_image('image1.png', replacement)
 
-      expect(doc.images['image1.png']).not_to eq(old_image)
+      expect(doc.media['image1.png']).not_to eq(old_image)
     end
 
-    xit 'should remove image1' do
+    it 'should remove image1' do
       image = 'image1.png'
 
       doc.remove_image(image)
       rel = doc.image_relations.find { |relation| relation['Target'].include?(image) }
+
+      temp_file = Tempfile.new(['docx_gem', '.docx'])
+      new_doc_path = temp_file.path
+      doc.save_to(new_doc_path)
+      new_doc = Docx::Document.open(new_doc_path)
+
       expect(rel).to be_nil
-      expect(doc.images['image1.png']).to be_nil
+      expect(new_doc.media['image1.png']).to be_nil
+
+      temp_file.close!
+      expect(File.exist?(new_doc_path)).to eq(false)
     end
   end
 end

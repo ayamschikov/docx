@@ -44,7 +44,7 @@ end
 RSpec.shared_examples_for 'saving to file' do
   it 'should save to a normal file path' do
     @new_doc_path = @fixtures_path + '/new_save.docx'
-    @doc.save(@new_doc_path)
+    @doc.save_to(@new_doc_path)
     @new_doc = Docx::Document.open(@new_doc_path)
     expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
   end
@@ -52,7 +52,7 @@ RSpec.shared_examples_for 'saving to file' do
   it 'should save to a tempfile' do
     temp_file = Tempfile.new(['docx_gem', '.docx'])
     @new_doc_path = temp_file.path
-    @doc.save(@new_doc_path)
+    @doc.save_to(@new_doc_path)
     @new_doc = Docx::Document.open(@new_doc_path)
     expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
 

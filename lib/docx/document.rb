@@ -29,7 +29,7 @@ module Docx
       relationships: 'word/_rels/document.xml.rels'
     }.freeze
 
-    attr_reader :xml, :doc, :zip, :styles, :headers, :footers
+    attr_reader :xml, :doc, :zip, :styles, :headers, :footers, :media
 
     def initialize(path_or_io, _options = {})
       @replace = {}
@@ -86,6 +86,9 @@ module Docx
 
       return unless rel.instance_of?(Nokogiri::XML::Element)
 
+      doc_image = @doc.search('//w:drawing//wp:docPr').find { |doc_pr| doc_pr.attribute('name').value == image }
+      doc_image.parent.parent.remove
+
       zip.remove("word/media/#{image}")
 
       rel.remove
@@ -120,7 +123,18 @@ module Docx
     end
 
     def images
-      @media
+      # @doc.xpath('//w:drawing').each { |dr| ap dr.xpath('//wp:docPr') }
+      # ap @doc.search 'w:drawing|wp:docPr[name=image2.png]'
+      # dr = @doc.xpath('//w:drawing').select { |dr| ap dr.attr('//wp:docPr') }
+      ap 'drrrrr'
+      dr = @doc.xpath('//w:drawing').map { |dr| dr.xpath('//wp:docPr') }
+      # ap dr.first.first.parent.parent
+      ap dr
+      ap '=' * 50
+      dff = @doc.search('//w:drawing//wp:docPr').find { |dof| dof.attribute('name').value == "image2.png" }
+      ap dff.parent.parent
+      ap '=' * 50
+      @doc.css('w:drawing')
     end
 
     def bookmarks
