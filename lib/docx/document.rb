@@ -99,14 +99,9 @@ module Docx
 
       return unless rel.instance_of?(Nokogiri::XML::Element)
 
-      data = begin
-               URI.open(replacement).read.force_encoding('UTF-8')
-             rescue
-               nil
-             end
+      data = URI.open(URI.escape(replacement)).read.force_encoding('UTF-8')
 
       return if data.nil? || data.empty?
-
 
       img_url_no_params = replacement.gsub(/\?.*/, '')
       extension = File.extname(img_url_no_params).split('.').last
@@ -120,21 +115,6 @@ module Docx
       zip.add("word/media/#{image_without_extension}.#{extension}", temp_image)
 
       rel['Target'] = "media/#{image_without_extension}.#{extension}"
-    end
-
-    def images
-      # @doc.xpath('//w:drawing').each { |dr| ap dr.xpath('//wp:docPr') }
-      # ap @doc.search 'w:drawing|wp:docPr[name=image2.png]'
-      # dr = @doc.xpath('//w:drawing').select { |dr| ap dr.attr('//wp:docPr') }
-      ap 'drrrrr'
-      dr = @doc.xpath('//w:drawing').map { |dr| dr.xpath('//wp:docPr') }
-      # ap dr.first.first.parent.parent
-      ap dr
-      ap '=' * 50
-      dff = @doc.search('//w:drawing//wp:docPr').find { |dof| dof.attribute('name').value == "image2.png" }
-      ap dff.parent.parent
-      ap '=' * 50
-      @doc.css('w:drawing')
     end
 
     def bookmarks
